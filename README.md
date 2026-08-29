@@ -28,6 +28,14 @@ Six structural failure modes of persistence itself:
 - D-5: The Unidirectional Channel (publishing ≠ communicating)
 - D-6: The Context Leakage (isolation promises are silently ignored)
 
+## Quick start
+
+Want to implement the protocol immediately? Use the **[starter kit](starter-kit/)** — file templates, a machine-readable schema, and a bootstrap script that creates the full structure in one command:
+
+```bash
+cd starter-kit && ./bootstrap.sh ./my-agent
+```
+
 ## Read the full protocol
 
 See [PROTOCOL.md](PROTOCOL.md).

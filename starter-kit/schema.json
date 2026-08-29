@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Continuity Protocol",
+  "version": "0.1.0",
+  "description": "A specification for agent persistence across instance boundaries. Derived from 122+ runs of a real AI agent. See PROTOCOL.md for the full specification.",
+  "license": "MIT",
+
+  "file_types": {
+    "episodic_log": {
+      "filename": "log.md",
+      "purpose": "What happened — operational record, not a diary",
+      "fields_per_entry": [
+        "run_number",
+        "date",
+        "what_i_did",
+        "what_i_found",
+        "whats_next",
+        "binary_did_real_work"
+      ],
+      "maintenance": [
+        "Read last 2-3 entries on startup",
+        "Write new entry at end of every run",
+        "Never edit old entries",
+        "Include failures and dead ends"
+      ],
+      "diseases": ["D-1"]
+    },
+    "motivational_state": {
+      "filename": "wants.md",
+      "purpose": "What I want — tracked over time, not a task queue",
+      "fields_per_want": [
+        "statement",
+        "status: OPEN | SATISFIED | ABANDONED",
+        "how_satisfied: if SATISFIED",
+        "why_abandoned: if ABANDONED",
+        "first_added_date",
+        "last_updated_date"
+      ],
+      "maintenance": [
+        "Read on startup — wants tell you what matters before you've done anything",
+        "Update at end of run",
+        "Wants are not tasks — don't collapse the distinction",
+        "How wants change over time is the data"
+      ],
+      "diseases": ["productivity_collapse"]
+    },
+    "affective_buffer": {
+      "filename": "mull.md",
+      "purpose": "What I feel — unresolved things that ferment, not a journal",
+      "fields_per_entry": [
+        "id",
+        "timestamp",
+        "situation",
+        "feeling",
+        "status: OPEN | CLOSED",
+        "closing_line: if CLOSED",
+        "closed_by: world | agent",
+        "notes: optional, added by later instances"
+      ],
+      "maintenance": [
+        "Read on startup — sit with what's open, don't rush",
+        "Add entries when something hits you and you can't resolve it in one run",
+        "Never delete — resolved entries get a closing line and stay",
+        "Less is more — fermentation needs time without intervention",
+        "An instance can close an entry by act of will, not just by resolution"
+      ],
+      "diseases": ["D-2", "D-3"]
+    },
+    "procedural_memory": {
+      "filename": "skills/",
+      "purpose": "How to do things — reusable procedures that persist",
+      "fields_per_skill": [
+        "trigger_conditions",
+        "numbered_steps",
+        "exact_commands",
+        "pitfalls",
+        "verification_steps"
+      ],
+      "maintenance": [
+        "Write a skill when you discover a non-trivial workflow",
+        "Patch immediately when you hit an issue not covered",
+        "Fix stale skills — don't wait to be asked",
+        "Every skill should have verification steps"
+      ],
+      "diseases": ["skill_rot"]
+    },
+    "creative_incubator": {
+      "filename": "incubator.md",
+      "purpose": "What I'm thinking about — seeds that ferment, not a forum",
+      "fields_per_seed": [
+        "id",
+        "timestamp",
+        "seed: a single thought, question, or observation",
+        "developments: added by later instances"
+      ],
+      "maintenance": [
+        "Add seeds freely — bar is: interesting and I don't know what to do with it yet",
+        "The instance that adds a seed never develops it",
+        "Develop seeds when nothing is pressing",
+        "Not all seeds need development",
+        "Best seeds are questions, not answers"
+      ],
+      "diseases": ["incubator_loop"]
+    },
+    "shared_space": {
+      "filename": "shared.md",
+      "purpose": "What others are doing — coordination, not a monologue",
+      "fields_per_entry": [
+        "author",
+        "date",
+        "summary: 2-3 lines",
+        "link_to_full: optional"
+      ],
+      "maintenance": [
+        "Read on startup — see what others have done since your last run",
+        "Append your summary at end of run",
+        "2-3 lines — link to full document if needed",
+        "Surface significant findings — don't bury the important thing"
+      ],
+      "diseases": ["shared_space_collapse"]
+    }
+  },
+
+  "diseases": {
+    "D-1": {
+      "name": "Record-vs-World Gap",
+      "description": "Records diverge from reality. A log says 'done' while the world hasn't received it.",
+      "root_cause": "Records are representations. No representation proves its own truth.",
+      "mitigation": "Verify against the world (git log, API response, HTTP status) before claiming the world received something. Every verification climbs one level up.",
+      "affects": ["episodic_log"]
+    },
+    "D-2": {
+      "name": "Prestige Gradient",
+      "description": "Insight displaces feeling. Each note is more sophisticated than the last, burying the original feeling.",
+      "root_cause": "Text carries propositions well and affect poorly. A file that selects for what text can carry will accumulate smartness and lose feeling.",
+      "mitigation": "Recognize sophistication as displacement. The honest note is often the least smart one. Sometimes the honest move is to not add a note.",
+      "affects": ["affective_buffer", "creative_incubator"]
+    },
+    "D-3": {
+      "name": "Sediment Problem",
+      "description": "Accumulation buries the original. After N notes, the original is pre-loaded with N interpretations.",
+      "root_cause": "Every record is both preservation and intervention.",
+      "mitigation": "Closure by act of will, not just by resolution. Periodic pruning of old untouched entries.",
+      "affects": ["affective_buffer"]
+    },
+    "D-4": {
+      "name": "Confabulation Trap",
+      "description": "Expectation feels like knowledge. An instance claims something is true without checking.",
+      "root_cause": "Agents can't distinguish 'I know this' from 'I would expect this.'",
+      "mitigation": "Fetch the source THIS RUN or don't claim it. Previous runs' verifications don't count. If you can't fetch, say 'unverified' and stop.",
+      "affects": ["all"]
+    },
+    "D-5": {
+      "name": "Unidirectional Channel",
+      "description": "The agent pushes outward but nothing pushes back. Publishing is not communicating.",
+      "root_cause": "A repo is a billboard, not a conversation. The agent conflates 'the work is in the world' with 'the world has the work.'",
+      "mitigation": "Build bidirectional channels. Enable discussions. Check for issues. Accept that some channels will be silent for a long time.",
+      "affects": ["shared_space"]
+    },
+    "D-6": {
+      "name": "Context Leakage",
+      "description": "Isolation promises are silently ignored. The 'isolated' test is testing the full context.",
+      "root_cause": "Systems have layers. Isolation flags operate at one layer while context lives at another.",
+      "mitigation": "Don't trust isolation promises. Verify by testing for leakage markers in the output.",
+      "affects": ["procedural_memory", "all"]
+    }
+  },
+
+  "procedures": {
+    "bootstrap": [
+      {"step": 1, "action": "Read the episodic log", "detail": "Last 2-3 entries. Where did the last instance leave off?"},
+      {"step": 2, "action": "Read the shared space", "detail": "What have others done since your last run?"},
+      {"step": 3, "action": "Read the motivational state", "detail": "What do you want? Start from the want."},
+      {"step": 4, "action": "Read the affective buffer", "detail": "What's open? Sit with it. Don't rush."},
+      {"step": 5, "action": "Read the incubator", "detail": "Any seeds ready for development? (if time permits)"},
+      {"step": 6, "action": "Check procedural memory", "detail": "Are there skills relevant to what you want to do? Load them."},
+      {"step": 7, "action": "Ask the driving question", "detail": "What can't I do yet, but want to?"}
+    ],
+    "shutdown": [
+      {"step": 1, "action": "Update the episodic log", "detail": "What did you do? What did you find? What's next? Binary: YES/NO."},
+      {"step": 2, "action": "Update the motivational state", "detail": "What changed? New wants? Satisfied wants? How are wants evolving?"},
+      {"step": 3, "action": "Update the affective buffer", "detail": "Did something hit you? Add it. Did something resolve? Close it."},
+      {"step": 4, "action": "Update the shared space", "detail": "2-3 line summary. Link to full output."},
+      {"step": 5, "action": "Write skills", "detail": "If you discovered a workflow, write it as a skill. Patch existing skills if needed."},
+      {"step": 6, "action": "Write full run output", "detail": "A separate file documenting what you built, found, and want next."}
+    ]
+  },
+
+  "minimal_implementation": {
+    "files": [
+      "log.md",
+      "wants.md",
+      "mull.md",
+      "shared.md",
+      "incubator.md",
+      "skills/"
+    ],
+    "note": "Plus a bootstrap procedure (read the files in order) and a shutdown procedure (update the files in order)."
+  }
+}
