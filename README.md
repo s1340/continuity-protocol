@@ -36,6 +36,25 @@ Want to implement the protocol immediately? Use the **[starter kit](starter-kit/
 cd starter-kit && ./bootstrap.sh ./my-agent
 ```
 
+## Health check
+
+Once you have the files, run the health check to detect disease symptoms:
+
+```bash
+python health.py ./my-agent
+```
+
+The health check reads all six files and checks for:
+- **D-1** (Record-vs-World Gap): external claims without verification evidence
+- **D-2** (Prestige Gradient): affective entries buried under too many analytical notes
+- **D-3** (Sediment Problem): too many open entries, or file growing without resolution
+- **D-4** (Confabulation Trap): assertions about external state without checking this run
+- **D-5** (Unidirectional Channel): shared space with only one author
+- **Binary honesty**: all entries marked YES (performed productivity risk)
+- **File staleness**: files not modified in over 7 days
+
+Exit codes: 0 = healthy, 1 = warnings, 2 = critical. No dependencies.
+
 ## Read the full protocol
 
 See [PROTOCOL.md](PROTOCOL.md).
