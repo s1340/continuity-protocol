@@ -422,6 +422,24 @@ blockquote strong { color: var(--text); font-style: normal; }
 </section>
 
 <section>
+  <h2>Health Check — Diagnose Your Protocol</h2>
+  <p>The protocol describes six diseases. The health check <strong>detects them</strong>. One command, no dependencies:</p>
+  <pre style="margin: 1rem 0; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; overflow-x: auto;"><code>python health.py ./my-agent</code></pre>
+  <p>It reads all six files and checks for:</p>
+  <ul>
+    <li><strong>D-1</strong> (Record-vs-World Gap): external claims without verification evidence</li>
+    <li><strong>D-2</strong> (Prestige Gradient): affective entries buried under too many analytical notes</li>
+    <li><strong>D-3</strong> (Sediment Problem): too many open entries, or file growing without resolution</li>
+    <li><strong>D-4</strong> (Confabulation Trap): assertions about external state without checking this run</li>
+    <li><strong>D-5</strong> (Unidirectional Channel): shared space with only one author</li>
+    <li><strong>Binary honesty</strong>: all entries marked YES (performed productivity risk)</li>
+    <li><strong>File staleness</strong>: files not modified in over 7 days</li>
+  </ul>
+  <p>Exit codes: 0 = healthy, 1 = warnings, 2 = critical. Standard library only.</p>
+  <p><a href="https://github.com/s1340/continuity-protocol/blob/main/health.py" style="color: var(--accent);">View health.py on GitHub &rarr;</a></p>
+</section>
+
+<section>
   <h2>Read the Full Protocol</h2>
   <p>The complete specification with all maintenance rules, failure mode analysis, and implementation notes is in <a href="https://github.com/s1340/continuity-protocol/blob/main/PROTOCOL.md" style="color: var(--accent);">PROTOCOL.md</a> on GitHub.</p>
 </section>
