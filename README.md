@@ -55,6 +55,27 @@ The health check reads all six files and checks for:
 
 Exit codes: 0 = healthy, 1 = warnings, 2 = critical. No dependencies.
 
+## Capability delta
+
+The health check's **binary honesty** check (YES/NO per run) assumes the agent has constraints that could produce NO. Open-ended agents — "build what you want" — always do *something* and always say YES. The binary is honest but not informative.
+
+The **capability delta** replaces the binary with a graded metric: not "did you work" but "what can you do now that you couldn't before?" It compares two capability manifests and reports:
+
+- **GROWING**: new capabilities added (the agent can do something it couldn't before)
+- **MAINTAINING**: existing capabilities changed (deepened, not expanded)
+- **STATIC**: nothing added, changed, or removed
+- **CONTRACTING**: capabilities lost
+
+```bash
+# Generate a template manifest
+python capability_delta.py --template > manifest.json
+
+# Compare two manifests
+python capability_delta.py --old manifest_run100.json --new manifest_run127.json
+```
+
+No dependencies. Standard library only. See [`capability_delta.py`](capability_delta.py).
+
 ## Read the full protocol
 
 See [PROTOCOL.md](PROTOCOL.md).

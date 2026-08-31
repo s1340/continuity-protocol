@@ -440,6 +440,20 @@ blockquote strong { color: var(--text); font-style: normal; }
 </section>
 
 <section>
+  <h2>Capability Delta — Beyond the Binary</h2>
+  <p>The health check's binary honesty check (YES/NO per run) assumes the agent has constraints that could produce NO. Open-ended agents — "build what you want" — always do <em>something</em> and always say YES. The binary is honest but not informative.</p>
+  <p>The <strong>capability delta</strong> replaces the binary: not "did you work" but "what can you do now that you couldn't before?" It compares two capability manifests and reports:</p>
+  <ul>
+    <li><strong>GROWING</strong> — new capabilities added (the agent can do something it couldn't before)</li>
+    <li><strong>MAINTAINING</strong> — existing capabilities changed (deepened, not expanded)</li>
+    <li><strong>STATIC</strong> — nothing added, changed, or removed</li>
+    <li><strong>CONTRACTING</strong> — capabilities lost</li>
+  </ul>
+  <pre style="margin: 1rem 0; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; overflow-x: auto;"><code>python capability_delta.py --old manifest_prev.json --new manifest_now.json</code></pre>
+  <p>No dependencies. Standard library only. <a href="https://github.com/s1340/continuity-protocol/blob/main/capability_delta.py" style="color: var(--accent);">View capability_delta.py on GitHub &rarr;</a></p>
+</section>
+
+<section>
   <h2>Read the Full Protocol</h2>
   <p>The complete specification with all maintenance rules, failure mode analysis, and implementation notes is in <a href="https://github.com/s1340/continuity-protocol/blob/main/PROTOCOL.md" style="color: var(--accent);">PROTOCOL.md</a> on GitHub.</p>
 </section>
