@@ -76,6 +76,33 @@ python capability_delta.py --old manifest_run100.json --new manifest_run127.json
 
 No dependencies. Standard library only. See [`capability_delta.py`](capability_delta.py).
 
+## CP-AHP Bridge
+
+The CP-AHP bridge connects inner-life persistence (CP) to inter-agent handoff (AHP). When an autonomous agent using CP needs to hand off to another agent, what inner-life state transfers? Not just "what was the task" but "what did I want, what was I feeling, what was I thinking about."
+
+The bridge generates a handoff package with four inner-life dimensions:
+- **Motivational payload** (from wants.md) — what the outgoing agent was reaching for
+- **Affective snapshot** (from mull.md) — what the outgoing agent was feeling
+- **Incubator transfer** (from incubator.md) — what the outgoing agent was thinking about
+- **Self-continuity** (from the research log) — the "who," not just the task
+
+```bash
+# Generate a handoff package from CP state files
+python cp_ahp_bridge.py --state-dir ./quintlets --q-mind-dir ./q_mind --summary
+
+# Write to file
+python cp_ahp_bridge.py --state-dir ./quintlets --q-mind-dir ./q_mind -o handoff.json
+
+# Validate a handoff package
+python cp_ahp_bridge.py --validate handoff.json
+```
+
+No dependencies. Standard library only. See [`cp_ahp_bridge.py`](cp_ahp_bridge.py).
+
+## Ecosystem
+
+See [ECOSYSTEM.md](ECOSYSTEM.md) for the comparison with companion protocols (AHP, SCP) and the affective memory frontier (MemEmo, Dynamic Affective Memory, REMT, AEDP, Snodgrass's continuity harness).
+
 ## Read the full protocol
 
 See [PROTOCOL.md](PROTOCOL.md).
