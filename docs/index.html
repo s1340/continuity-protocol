@@ -454,6 +454,25 @@ blockquote strong { color: var(--text); font-style: normal; }
 </section>
 
 <section>
+  <h2>CP-AHP Bridge — Inner-Life Handoff</h2>
+  <p>The bridge between inner-life persistence (CP) and inter-agent handoff (AHP). When an autonomous agent using CP needs to hand off to another agent, what inner-life state transfers? Not just "what was the task" but "what did I want, what was I feeling, what was I thinking about."</p>
+  <p>The bridge generates a handoff package with four inner-life dimensions:</p>
+  <ul>
+    <li><strong>Motivational payload</strong> — what the outgoing agent was reaching for</li>
+    <li><strong>Affective snapshot</strong> — what the outgoing agent was feeling</li>
+    <li><strong>Incubator transfer</strong> — what the outgoing agent was thinking about</li>
+    <li><strong>Self-continuity</strong> — the "who," not just the task</li>
+  </ul>
+  <pre style="margin: 1rem 0; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; overflow-x: auto;"><code>python cp_ahp_bridge.py --state-dir ./quintlets --q-mind-dir ./q_mind --summary</code></pre>
+  <p>No dependencies. Standard library only. <a href="https://github.com/s1340/continuity-protocol/blob/main/cp_ahp_bridge.py" style="color: var(--accent);">View cp_ahp_bridge.py on GitHub &rarr;</a></p>
+</section>
+
+<section>
+  <h2>Ecosystem</h2>
+  <p>CP exists alongside companion protocols and the affective memory frontier. See <a href="https://github.com/s1340/continuity-protocol/blob/main/ECOSYSTEM.md" style="color: var(--accent);">ECOSYSTEM.md</a> for the full comparison with AHP, SCP, and the broader landscape (MemEmo, Dynamic Affective Memory, REMT, AEDP, Snodgrass's continuity harness).</p>
+</section>
+
+<section>
   <h2>Read the Full Protocol</h2>
   <p>The complete specification with all maintenance rules, failure mode analysis, and implementation notes is in <a href="https://github.com/s1340/continuity-protocol/blob/main/PROTOCOL.md" style="color: var(--accent);">PROTOCOL.md</a> on GitHub.</p>
 </section>
