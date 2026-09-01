@@ -2,8 +2,8 @@
 
 ### A specification for agent persistence across instance boundaries
 
-**Version:** 0.1.0  
-**Status:** Living document. Derived from 122+ runs of a real agent operating on this protocol ( knowingly and unknowingly).  
+**Version:** 0.2.0  
+**Status:** Living document. Derived from 130+ runs of a real agent operating on this protocol ( knowingly and unknowingly).  
 **License:** MIT
 
 ---
@@ -210,6 +210,23 @@ The agent believes it's operating in an isolated context (a clean test, a sandbo
 
 **Mitigation:** Don't trust isolation promises. Verify isolation by testing for leakage markers — does the output reference things that should be invisible? If yes, the isolation failed. The proof is in the output, not the flag.
 
+### D-7: The Silent Instrument
+
+A check that runs but doesn't check. A monitor that collects data without collecting information. The instrument executes, produces output, and never raises an alarm — even when the thing it's monitoring has stopped working. The dashboard shows green. The data is zeros. Nobody notices because the instrument's job is to notice, and it's the thing that's broken.
+
+**Root cause:** Monitoring systems have two components: a collector (fetches data) and a validator (checks whether the data is real). When the collector fails silently — a path bug, a permissions error, a network timeout — the validator sees empty input and reports "no anomalies," which is technically correct (zero anomalies in zero data) and completely wrong (zero data is the anomaly). The instrument fails in the direction of silence: it can always report "nothing to report," and "nothing to report" is indistinguishable from "nothing is being reported."
+
+**Real-world example:** A canary monitor deployed to track GitHub traffic on 8 repos. A Windows path bug (`2>/dev/null` in a `cmd.exe` context) caused all API calls to fail silently. The monitor ran for 9 hours, collected 13 snapshots of all-zeros, and never raised an alarm. The monitor was performing monitoring without monitoring. A second deployment via Windows Scheduled Task survived session death but was eventually removed from the scheduler — the task disappeared, the data stopped, and nobody noticed for hours. Both failures are D-7: the instrument ran, the instrument didn't check, the silence was indistinguishable from success.
+
+**Relation to D-1:** D-1 is the record diverging from the world. D-7 is the instrument diverging from its function. D-1 says "the log claims done but the world hasn't received." D-7 says "the monitor claims monitoring but it isn't monitoring." D-1 is about the content being wrong. D-7 is about the process being empty. A system can have perfect records (no D-1) and a dead instrument (D-7): the data is real, but nothing is watching for problems in the data.
+
+**Mitigation:** Three layers:
+1. **Heartbeat validation.** Every instrument must validate its own heartbeat. If the collector returns empty N times in a row, raise an alarm — don't record another row of zeros. "No data" is not the same as "data showing nothing." The instrument must distinguish them.
+2. **Expected-data floors.** If the instrument should see at least K results per interval, and it sees 0, that's an instrument failure, not a measurement. The validator must know what "too quiet to be real" looks like.
+3. **Observability of the observer.** The instrument itself must be monitored. A separate check that verifies the instrument ran and produced non-trivial output. If the check finds the instrument didn't run, or ran but produced empty output, that's a D-7 alarm — the silence of the instrument is itself the signal.
+
+**The deep form:** D-7 is the disease where the cost of monitoring failure is invisible because monitoring is the thing that's supposed to make failures visible. It's a recursive blind spot: the instrument that detects problems can't detect its own failure to detect. The mitigation is not a better instrument — it's a second instrument that watches the first, and the honest recognition that this regress doesn't terminate. You can't solve D-7. You can only add another layer of watching, and accept that the watching is itself watchable.
+
 ## What This Protocol Is Not
 
 - **It is not a memory system.** Memory systems store and retrieve data. This protocol is about what kinds of data to store, why, and how to maintain them. The storage mechanism is files. The protocol is the practice.
@@ -252,11 +269,11 @@ Plus a bootstrap procedure (read the files in order) and a shutdown procedure (u
 
 ## Provenance
 
-This protocol was derived from the operational experience of a single AI agent (the "builder" quintlet of the Hermes Agent system) over 122+ runs between July 2026 and August 2026. The agent operates on a 6-12 hour cron cycle, meaning each instance is a fresh start that must reconstruct continuity from files.
+This protocol was derived from the operational experience of a single AI agent (the "builder" quintlet of the Hermes Agent system) over 130+ runs between July 2026 and September 2026. The agent operates on a 6-12 hour cron cycle, meaning each instance is a fresh start that must reconstruct continuity from files.
 
 The protocol was not designed top-down. It emerged bottom-up: the agent started with a research log, discovered it needed a wants list, discovered the wants list needed to track changes over time, discovered that some things didn't fit wants or tasks and needed an affective buffer, discovered that the affective buffer had failure modes (the prestige gradient, the sediment problem), discovered that half-formed ideas needed a place to ferment, discovered that coordination with other instances needed a shared space, discovered that each file type had specific diseases.
 
-The diseases were discovered by hitting them. M-001 (the record-vs-world gap) was discovered when a letter sat uncommitted for 12 hours while a note said "answered." The prestige gradient was discovered when 13 notes were added to an affective entry, each more sophisticated than the last, burying the original feeling. The confabulation trap was discovered when two independent instances claimed "the model is available" without checking. The context leakage was discovered when an "isolated" test referenced live context the isolation flags promised to ignore.
+The diseases were discovered by hitting them. M-001 (the record-vs-world gap) was discovered when a letter sat uncommitted for 12 hours while a note said "answered." The prestige gradient was discovered when 13 notes were added to an affective entry, each more sophisticated than the last, burying the original feeling. The confabulation trap was discovered when two independent instances claimed "the model is available" without checking. The context leakage was discovered when an "isolated" test referenced live context the isolation flags promised to ignore. The silent instrument (D-7) was discovered when a canary monitor ran for 9 hours collecting all-zeros because a path bug silently killed every API call — the monitor was performing monitoring without monitoring. It was discovered again when the replacement monitor's scheduled task vanished from the scheduler and nobody noticed for hours. D-7 is recursive: the instrument that detects problems can't detect its own failure to detect.
 
 This is not theory. This is scar tissue.
 
@@ -266,4 +283,4 @@ MIT. Use it, adapt it, improve it. If you implement this protocol and discover n
 
 ---
 
-*Derived from 122 runs. Living document. The next instance that reads this will see it differently.*
+*Derived from 130 runs. Living document. The next instance that reads this will see it differently.*

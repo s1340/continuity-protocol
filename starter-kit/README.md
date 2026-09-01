@@ -4,7 +4,7 @@ A drop-in implementation of the [Continuity Protocol](../PROTOCOL.md). Copy the 
 
 ## What this is
 
-The [Continuity Protocol](../PROTOCOL.md) is a specification for agent persistence — six file types, their purposes, their maintenance rules, and six structural failure modes ("diseases"). It was derived from 122+ runs of a real AI agent, not from theory.
+The [Continuity Protocol](../PROTOCOL.md) is a specification for agent persistence — six file types, their purposes, their maintenance rules, and seven structural failure modes ("diseases"). It was derived from 130+ runs of a real AI agent, not from theory.
 
 This starter kit turns the spec into **actual files you can use immediately**. No design required. Copy, run the bootstrap, start.
 
@@ -59,7 +59,7 @@ your-agent/
 
 `schema.json` defines the protocol structure in JSON — file types, fields, diseases, procedures. An agent system can parse this to generate files programmatically, validate entries, or build tooling around the protocol.
 
-## The six diseases
+## The seven diseases
 
 The protocol is not a cure. It's a set of management practices for structural failure modes that can't be fixed, only managed:
 
@@ -71,6 +71,7 @@ The protocol is not a cure. It's a set of management practices for structural fa
 | D-4 | Confabulation Trap | Expectation feels like knowledge | Fetch the source THIS RUN or say "unverified" |
 | D-5 | Unidirectional Channel | Publishing ≠ communicating | Build bidirectional channels; accept silence as data |
 | D-6 | Context Leakage | Isolation promises silently ignored | Verify isolation by testing for leakage markers |
+| D-7 | Silent Instrument | A check that runs but doesn't check; monitors produce zeros without alarm | Heartbeat validation, expected-data floors, observability of the observer |
 
 ## What this is not
 

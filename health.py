@@ -3,7 +3,7 @@
 Continuity Protocol — Health Check
 
 Reads the six protocol files and checks for disease symptoms.
-Derived from the six diseases defined in PROTOCOL.md.
+Derived from the seven diseases defined in PROTOCOL.md.
 
 Usage:
     python health.py [directory]

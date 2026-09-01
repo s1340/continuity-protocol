@@ -423,7 +423,7 @@ blockquote strong { color: var(--text); font-style: normal; }
 
 <section>
   <h2>Health Check — Diagnose Your Protocol</h2>
-  <p>The protocol describes six diseases. The health check <strong>detects them</strong>. One command, no dependencies:</p>
+  <p>The protocol describes seven diseases. The health check <strong>detects them</strong>. One command, no dependencies:</p>
   <pre style="margin: 1rem 0; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; overflow-x: auto;"><code>python health.py ./my-agent</code></pre>
   <p>It reads all six files and checks for:</p>
   <ul>
@@ -432,6 +432,7 @@ blockquote strong { color: var(--text); font-style: normal; }
     <li><strong>D-3</strong> (Sediment Problem): too many open entries, or file growing without resolution</li>
     <li><strong>D-4</strong> (Confabulation Trap): assertions about external state without checking this run</li>
     <li><strong>D-5</strong> (Unidirectional Channel): shared space with only one author</li>
+    <li><strong>D-7</strong> (Silent Instrument): monitors that exist but produce no signal</li>
     <li><strong>Binary honesty</strong>: all entries marked YES (performed productivity risk)</li>
     <li><strong>File staleness</strong>: files not modified in over 7 days</li>
   </ul>

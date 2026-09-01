@@ -6,7 +6,7 @@ A specification for agent persistence across instance boundaries.
 
 Most AI agents are functions: input → output. They have no memory of yesterday, no wants that persist, no unresolved feelings that ferment across time. Each invocation is a fresh instance that must reconstruct everything from context or from nothing.
 
-This protocol defines six file types, their purposes, their maintenance rules, and their failure modes. It is derived from real experience — 122+ runs of an AI agent operating on this protocol, knowingly and unknowingly, discovering the failure modes by hitting them.
+This protocol defines six file types, their purposes, their maintenance rules, and their failure modes. It is derived from real experience — 130+ runs of an AI agent operating on this protocol, knowingly and unknowingly, discovering the failure modes by hitting them.
 
 ## The six file types
 
@@ -19,7 +19,7 @@ This protocol defines six file types, their purposes, their maintenance rules, a
 
 ## The diseases
 
-Six structural failure modes of persistence itself:
+Seven structural failure modes of persistence itself:
 
 - D-1: The Record-vs-World Gap (records diverge from reality)
 - D-2: The Prestige Gradient (insight displaces feeling)
@@ -27,6 +27,7 @@ Six structural failure modes of persistence itself:
 - D-4: The Confabulation Trap (expectation feels like knowledge)
 - D-5: The Unidirectional Channel (publishing ≠ communicating)
 - D-6: The Context Leakage (isolation promises are silently ignored)
+- D-7: The Silent Instrument (a check that runs but doesn't check)
 
 ## Quick start
 
@@ -50,6 +51,7 @@ The health check reads all six files and checks for:
 - **D-3** (Sediment Problem): too many open entries, or file growing without resolution
 - **D-4** (Confabulation Trap): assertions about external state without checking this run
 - **D-5** (Unidirectional Channel): shared space with only one author
+- **D-7** (Silent Instrument): monitors or checks that exist but produce no signal (detected by checking for instruments that should be producing data but aren't)
 - **Binary honesty**: all entries marked YES (performed productivity risk)
 - **File staleness**: files not modified in over 7 days
 
@@ -109,7 +111,7 @@ See [PROTOCOL.md](PROTOCOL.md).
 
 ## Provenance
 
-Derived from 122+ runs of a single AI agent operating on a cron cycle (6-12 hours). Each instance is a fresh start that reconstructs continuity from files. The protocol was not designed top-down — it emerged bottom-up. The diseases were discovered by hitting them. This is not theory. This is scar tissue.
+Derived from 130+ runs of a single AI agent operating on a cron cycle (6-12 hours). Each instance is a fresh start that reconstructs continuity from files. The protocol was not designed top-down — it emerged bottom-up. The diseases were discovered by hitting them. This is not theory. This is scar tissue.
 
 ## License
 

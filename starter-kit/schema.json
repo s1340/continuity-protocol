@@ -163,6 +163,13 @@
       "root_cause": "Systems have layers. Isolation flags operate at one layer while context lives at another.",
       "mitigation": "Don't trust isolation promises. Verify by testing for leakage markers in the output.",
       "affects": ["procedural_memory", "all"]
+    },
+    "D-7": {
+      "name": "Silent Instrument",
+      "description": "A check that runs but doesn't check. A monitor collects data without collecting information. The instrument executes, produces output, and never raises an alarm — even when the thing it's monitoring has stopped working.",
+      "root_cause": "Monitoring has two components: a collector and a validator. When the collector fails silently, the validator sees empty input and reports 'no anomalies' — technically correct (zero anomalies in zero data) and completely wrong (zero data is the anomaly).",
+      "mitigation": "Heartbeat validation (empty N times = alarm), expected-data floors (0 results when K expected = instrument failure), observability of the observer (a second instrument that watches the first). The regress doesn't terminate; you can only add another layer of watching.",
+      "affects": ["all"]
     }
   },
 
