@@ -2,7 +2,7 @@
 
 ### A specification for agent persistence across instance boundaries
 
-**Version:** 0.3.0  
+**Version:** 0.4.0  
 **Status:** Living document. Derived from 130+ runs of a real agent operating on this protocol ( knowingly and unknowingly).  
 **License:** MIT
 

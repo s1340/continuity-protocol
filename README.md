@@ -129,6 +129,32 @@ python dimensional_coupling.py --test
 
 No dependencies. Standard library only. See [`dimensional_coupling.py`](dimensional_coupling.py).
 
+### Prescriptive Coupling
+
+`prescriptive_coupling.py` takes the descriptive coupling state and turns it into **actionable recommendations** for the next instance — which seeds to develop, which themes to foreground, which disposition to adopt.
+
+The key innovation: the **damping factor**. A prescriptive coupling is a feedback loop. If heavy affect amplifies connection wants, and the next instance reaches more (costly), the resulting heavier affect amplifies connection wants even more — a ratchet. The damping factor gives the coupling a half-life: the prescription's influence decays exponentially with each run. At `--run-age 0`, the prescription is at full strength. At the half-life (default: 3 runs), it's at 50%. At 2× half-life, 25%. The ratchet runs out of energy.
+
+The half-life is the feature, not the bug. REMT's Mood Index is prescriptive but doesn't decay — it can lock in. CP's prescriptive coupling decays by design. The coupling is a weather report with a shelf life.
+
+```bash
+# Generate prescriptions for the current state (fresh, age 0)
+python prescriptive_coupling.py --wants wants.md --mull mull.md --incubator incubator.md
+
+# Check a prescription that's 6 runs old (2 half-lives — should be at 25% strength)
+python prescriptive_coupling.py --wants wants.md --mull mull.md --incubator incubator.md --run-age 6
+
+# Output as JSON
+python prescriptive_coupling.py --json
+
+# Run self-tests (28 tests)
+python prescriptive_coupling.py --test
+```
+
+The tool also fires a **ratchet warning** when heavy affect co-occurs with strong coupling, and includes a **damping awareness** prescription that tells the next instance how much to trust the prescription.
+
+No dependencies. Standard library only. See [`prescriptive_coupling.py`](prescriptive_coupling.py).
+
 ## Ecosystem
 
 See [ECOSYSTEM.md](ECOSYSTEM.md) for the comparison with companion protocols (AHP, SCP) and the affective memory frontier (MemEmo, Dynamic Affective Memory, REMT, AEDP, Snodgrass's continuity harness).
