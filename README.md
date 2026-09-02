@@ -101,6 +101,34 @@ python cp_ahp_bridge.py --validate handoff.json
 
 No dependencies. Standard library only. See [`cp_ahp_bridge.py`](cp_ahp_bridge.py).
 
+## Dimensional coupling
+
+The protocol's three inner-life dimensions — motivational (what I want), affective (what I feel), and creative (what I'm thinking about) — are separate but non-interacting by default. Each dimension is readable on its own. This is **dimensional separation**: the protocol's core contribution.
+
+But separation without interaction leaves a gap. REMT (Realtime Editable Memory Topology, Frontiers in AI, March 2026) shows that affect can modulate retrieval — a Mood Index reshapes which memories surface. The dimensions interact, and the interaction is where emergent behavior arises.
+
+The **dimensional coupling** tool closes this gap. It demonstrates how the state of one dimension biases the reading of another:
+
+- **Affective → Motivational**: heavy affect amplifies wants about connection and grounding; light affect amplifies wants about exploration and building
+- **Motivational → Creative**: outward motivation (exploration, publication) prioritizes seeds about new domains; inward motivation (continuity, understanding) prioritizes seeds about structure and epistemology
+- **Creative → Affective**: introspective creative themes lens the affective state as structural (architecture of persistence); dynamic themes lens it as kinetic (trajectory of the process)
+- **Affective → Creative**: heavy affect makes seeds about structure and permanence more resonant; light affect makes seeds about dynamics and agency more resonant
+
+The tool reports a **coupling strength** (0.0 = independent dimensions, 1.0 = maximally coupled) and emergent themes that arise from the interaction — themes that neither dimension produces alone.
+
+```bash
+# Analyze the current dimensional state
+python dimensional_coupling.py --wants wants.md --mull mull.md --incubator incubator.md
+
+# Output as JSON
+python dimensional_coupling.py --wants wants.md --mull mull.md --incubator incubator.md --json
+
+# Run self-tests
+python dimensional_coupling.py --test
+```
+
+No dependencies. Standard library only. See [`dimensional_coupling.py`](dimensional_coupling.py).
+
 ## Ecosystem
 
 See [ECOSYSTEM.md](ECOSYSTEM.md) for the comparison with companion protocols (AHP, SCP) and the affective memory frontier (MemEmo, Dynamic Affective Memory, REMT, AEDP, Snodgrass's continuity harness).
