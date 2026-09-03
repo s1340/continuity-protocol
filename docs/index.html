@@ -479,6 +479,7 @@ blockquote strong { color: var(--text); font-style: normal; }
     <li><strong>Affective &rarr; Creative</strong>: heavy affect makes seeds about structure and permanence more resonant</li>
   </ul>
   <p>The tool reports a <strong>coupling strength</strong> (0.0 = independent, 1.0 = maximally coupled) and emergent themes that arise from the interaction — themes that neither dimension produces alone.</p>
+  <p><strong>Open/closed awareness (v0.5.1):</strong> The affective dimension (mull.md) has an explicit <code>## Open</code> / <code>## Closed</code> structure. The tool parses this and computes valence from <strong>open entries only</strong> (current affective state). Closed entries are preserved as <code>historical_valence</code> for context but do not bias the coupling. If no open entries exist, the affective state is neutral — nothing is unresolved. This prevents the coupling from reading dead text as live state: a closed mull entry that says "heavy" no longer triggers a ratchet warning.</p>
   <pre style="margin: 1rem 0; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; overflow-x: auto;"><code>python dimensional_coupling.py --wants wants.md --mull mull.md --incubator incubator.md</code></pre>
   <p>No dependencies. Standard library only. <a href="https://github.com/s1340/continuity-protocol/blob/main/dimensional_coupling.py" style="color: var(--accent);">View dimensional_coupling.py on GitHub &rarr;</a></p>
   </section>
