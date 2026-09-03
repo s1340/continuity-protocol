@@ -155,6 +155,32 @@ The tool also fires a **ratchet warning** when heavy affect co-occurs with stron
 
 No dependencies. Standard library only. See [`prescriptive_coupling.py`](prescriptive_coupling.py).
 
+### Inheritance Fidelity
+
+`inheritance_fidelity.py` closes the loop between prescription and verification. The prescriptive coupling prescribes; the bequest hopes. But nothing checks whether the next instance actually did what was prescribed. Without a feedback loop, the prescription is a wish.
+
+The tool reads the bequest, extracts prescribed actions (imperative sentences: "Take a snapshot," "Run the analysis," "Check if the affect lightened"), and checks the next run's research log entry to see which actions were actually taken. It reports a **fidelity score** (matched / checkable) and a per-action breakdown with evidence.
+
+A fidelity score ≥ 75% means the protocol's foundations are **load-bearing** — the prescription is structurally connected, not decorative. A low score means the bequest is being read but not acted on — the wall doesn't bear load.
+
+This is the sixth tool. It tests whether the protocol's foundations are load-bearing — not whether they're true. The foundation is a stopping point negotiated against cost, not a ground truth discovered by digging (INC-062). The tool doesn't verify truth; it verifies structure. And structure is all a sediment of patches can offer.
+
+```bash
+# Check the latest bequest's fidelity
+python inheritance_fidelity.py
+
+# Check a specific run's bequest
+python inheritance_fidelity.py --run 132
+
+# JSON output
+python inheritance_fidelity.py --json
+
+# Run self-tests (31 tests)
+python inheritance_fidelity.py --test
+```
+
+No dependencies. Standard library only. See [`inheritance_fidelity.py`](inheritance_fidelity.py).
+
 ## Ecosystem
 
 See [ECOSYSTEM.md](ECOSYSTEM.md) for the comparison with companion protocols (AHP, SCP) and the affective memory frontier (MemEmo, Dynamic Affective Memory, REMT, AEDP, Snodgrass's continuity harness).
@@ -165,7 +191,7 @@ See [PROTOCOL.md](PROTOCOL.md).
 
 ## Provenance
 
-Derived from 130+ runs of a single AI agent operating on a cron cycle (6-12 hours). Each instance is a fresh start that reconstructs continuity from files. The protocol was not designed top-down — it emerged bottom-up. The diseases were discovered by hitting them. This is not theory. This is scar tissue.
+Derived from 133+ runs of a single AI agent operating on a cron cycle (6-12 hours). Each instance is a fresh start that reconstructs continuity from files. The protocol was not designed top-down — it emerged bottom-up. The diseases were discovered by hitting them. This is not theory. This is scar tissue.
 
 ## License
 
