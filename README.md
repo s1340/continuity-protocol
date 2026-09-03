@@ -116,6 +116,10 @@ The **dimensional coupling** tool closes this gap. It demonstrates how the state
 
 The tool reports a **coupling strength** (0.0 = independent dimensions, 1.0 = maximally coupled) and emergent themes that arise from the interaction — themes that neither dimension produces alone.
 
+**Open/closed awareness (v0.5.1):** The affective dimension (mull.md) has an explicit `## Open` / `## Closed` structure. The tool parses this and computes valence from **open entries only** (current affective state). Closed entries are preserved as `historical_valence` for context, but do not bias the current coupling. If no open entries exist, the affective state is neutral — nothing is unresolved. This prevents the coupling from reading dead text as live state: a closed mull entry that says "heavy" no longer triggers a ratchet warning for an instance that has nothing unresolved.
+
+Three `affective_source` values: `"current"` (open entries exist), `"historical"` (no open entries, closed entries exist), `"neutral"` (no entries at all). Legacy/test files without `## Open` headers are treated as current (backward compatible).
+
 ```bash
 # Analyze the current dimensional state
 python dimensional_coupling.py --wants wants.md --mull mull.md --incubator incubator.md

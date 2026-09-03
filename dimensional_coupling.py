@@ -93,6 +93,10 @@ class DimensionalState:
     dominant_themes: List[Tuple[str, int]] = field(default_factory=list)
     open_count: int = 0
     raw_text: str = ""
+    # Affective-specific fields (mull.md open/closed awareness)
+    current_valence: float = 0.0  # valence from OPEN entries only
+    historical_valence: float = 0.0  # valence from CLOSED entries only
+    affective_source: str = "neutral"  # "current" | "historical" | "neutral"
 
     def summary(self) -> str:
         themes = ", ".join(f"{t}({c})" for t, c in self.dominant_themes[:3])
@@ -148,8 +152,33 @@ def read_wants(path: str) -> DimensionalState:
     return state
 
 
+def _compute_valence(text: str) -> float:
+    """Compute affective valence from a text segment."""
+    text_lower = text.lower()
+    heavy = sum(text_lower.count(w) for w in HEAVY_WORDS)
+    light = sum(text_lower.count(w) for w in LIGHT_WORDS)
+    total = heavy + light
+    return (light - heavy) / max(total, 1)
+
+
+def _extract_themes(text: str, theme_map: Dict[str, List[str]]) -> Counter:
+    """Count affective themes in a text segment."""
+    text_lower = text.lower()
+    theme_counts = Counter()
+    for theme, keywords in theme_map.items():
+        count = sum(text_lower.count(kw) for kw in keywords)
+        if count > 0:
+            theme_counts[theme] = count
+    return theme_counts
+
+
 def read_mull(path: str) -> DimensionalState:
-    """Read the affective dimension (mull.md)."""
+    """Read the affective dimension (mull.md).
+
+    Parses the Open/Closed structure. Valence is computed from OPEN entries
+    only (current affective state). Closed entries are historical context.
+    If no open entries exist, valence is 0.0 (neutral — nothing unresolved).
+    """
     state = DimensionalState(name="affective", file=path)
     try:
         text = Path(path).read_text(encoding="utf-8")
@@ -159,25 +188,32 @@ def read_mull(path: str) -> DimensionalState:
     state.raw_text = text
     state.word_count = len(text.split())
 
-    text_lower = text.lower()
+    # ── Parse Open/Closed sections ──────────────────────────────────────
+    # The mull.md has ## Open and ## Closed sections.
+    # If the file has no ## Open header (legacy/test format), treat all
+    # text as open (current affective state).
+    has_open_header = "## Open" in text
+    closed_marker = "\n## Closed"
+    if has_open_header and closed_marker in text:
+        open_section, _, closed_section = text.partition(closed_marker)
+        # Remove everything up to and including "## Open" from the open section
+        open_section = re.sub(r"^.*?## Open\s*", "", open_section, flags=re.DOTALL)
+    elif has_open_header:
+        # Has ## Open but no ## Closed — everything after ## Open is open
+        open_section = re.sub(r"^.*?## Open\s*", "", text, flags=re.DOTALL)
+        closed_section = ""
+    else:
+        # No ## Open header — legacy/test format, treat all text as open
+        open_section = text
+        closed_section = ""
 
-    # Valence is the core metric for the affective dimension
-    heavy = sum(text_lower.count(w) for w in HEAVY_WORDS)
-    light = sum(text_lower.count(w) for w in LIGHT_WORDS)
-    total = heavy + light
-    state.valence = (light - heavy) / max(total, 1)
+    # Check if open section has actual entries (### M-xxx) vs placeholder
+    open_entries = re.findall(r"###\s+M-\d+", open_section)
+    closed_entries = re.findall(r"###\s+M-\d+", closed_section)
+    state.entry_count = len(open_entries) + len(closed_entries)
+    state.open_count = len(open_entries)
 
-    # Count entries (### M-xxx headers)
-    entries = re.findall(r"###\s+M-\d+", text)
-    state.entry_count = len(entries)
-
-    # Count open vs closed
-    closed = len(re.findall(r"Closed|closed\s*\(", text))
-    open_notes = text.count("**Note")
-    state.open_count = max(state.entry_count - closed, 0)
-
-    # Themes in the affective dimension — what feelings are about
-    theme_counts = Counter()
+    # ── Compute valence from open entries only (current state) ──────────
     affective_themes = {
         "delivery": ["delivered", "sent", "answered", "push", "commit", "letter", "wire"],
         "resolution": ["resolved", "closed", "open", "still", "unresolved", "fermentation"],
@@ -185,11 +221,40 @@ def read_mull(path: str) -> DimensionalState:
         "loss": ["lost", "gone", "died", "death", "absence", "void", "thinned"],
         "cost": ["cost", "rent", "load", "weight", "pain", "price", "mortgage"],
     }
-    for theme, keywords in affective_themes.items():
-        count = sum(text_lower.count(kw) for kw in keywords)
-        if count > 0:
-            theme_counts[theme] = count
-    state.dominant_themes = theme_counts.most_common(5)
+
+    if has_open_header and state.open_count > 0:
+        # Structured mull with open entries — current affective state
+        state.current_valence = _compute_valence(open_section)
+        state.historical_valence = _compute_valence(closed_section) if closed_section else 0.0
+        state.valence = state.current_valence
+        state.affective_source = "current"
+        # Themes from open entries only
+        state.dominant_themes = _extract_themes(open_section, affective_themes).most_common(5)
+    elif has_open_header and closed_section:
+        # Structured mull, no open entries, but closed entries exist — historical only
+        state.current_valence = 0.0  # neutral — nothing unresolved
+        state.historical_valence = _compute_valence(closed_section)
+        state.valence = 0.0  # current state is neutral
+        state.affective_source = "historical"
+        # Themes from closed entries as context (but valence is neutral)
+        state.dominant_themes = _extract_themes(closed_section, affective_themes).most_common(5)
+    elif not has_open_header and open_section.strip():
+        # Legacy/test format — no ## Open header, treat all text as current
+        state.current_valence = _compute_valence(open_section)
+        state.historical_valence = 0.0
+        state.valence = state.current_valence
+        state.affective_source = "current"
+        state.dominant_themes = _extract_themes(open_section, affective_themes).most_common(5)
+        # Count entries if any exist, else mark 1 open for non-empty text
+        if not open_entries:
+            state.open_count = 1
+            state.entry_count = 1
+    else:
+        # No entries at all
+        state.current_valence = 0.0
+        state.historical_valence = 0.0
+        state.valence = 0.0
+        state.affective_source = "neutral"
 
     return state
 
@@ -677,6 +742,48 @@ def run_tests() -> int:
         os.unlink(rich_wants)
         os.unlink(rich_mull)
         os.unlink(rich_inc)
+
+    # Test 6: Structured mull — closed entries only → neutral valence
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        f.write("# mull.md\n\n## Open\n\n_(no open entries)_\n\n## Closed\n\n"
+                "### M-001 — the heavy weight (opened 2026-01-01, closed 2026-01-05)\n\n"
+                "The pain was heavy. Lost and unresolved. Silence.\n")
+        structured_mull_closed = f.name
+    try:
+        state = read_mull(structured_mull_closed)
+        test("structured mull: no open entries", state.open_count == 0)
+        test("structured mull: neutral valence when all closed", abs(state.valence) < 0.01)
+        test("structured mull: affective_source is historical", state.affective_source == "historical")
+        test("structured mull: historical valence captures heavy", state.historical_valence < -0.1)
+    finally:
+        os.unlink(structured_mull_closed)
+
+    # Test 7: Structured mull — open entry with heavy affect → current valence
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        f.write("# mull.md\n\n## Open\n\n"
+                "### M-002 — current pain\n\nThe weight is heavy. Lost and broken.\n\n"
+                "## Closed\n\n"
+                "### M-001 — old pain (closed)\n\nResolved. Light. Free.\n")
+        structured_mull_open = f.name
+    try:
+        state = read_mull(structured_mull_open)
+        test("structured mull open: 1 open entry", state.open_count == 1)
+        test("structured mull open: valence from open (heavy)", state.valence < -0.1)
+        test("structured mull open: affective_source is current", state.affective_source == "current")
+        test("structured mull open: historical valence from closed (light)", state.historical_valence > 0)
+    finally:
+        os.unlink(structured_mull_open)
+
+    # Test 8: Legacy mull (no ## Open header) → treated as current
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        f.write("The pain was heavy. Lost and unresolved. Silence.\n")
+        legacy_mull = f.name
+    try:
+        state = read_mull(legacy_mull)
+        test("legacy mull: treated as current", state.affective_source == "current")
+        test("legacy mull: heavy valence preserved", state.valence < -0.1)
+    finally:
+        os.unlink(legacy_mull)
 
     print(f"\n{tests_passed} passed, {tests_failed} failed.")
     return 1 if tests_failed > 0 else 0
