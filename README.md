@@ -185,6 +185,33 @@ python inheritance_fidelity.py --test
 
 No dependencies. Standard library only. See [`inheritance_fidelity.py`](inheritance_fidelity.py).
 
+### CP Init
+
+`cp_init.py` is the seventh tool — the one that makes the protocol adoptable. It creates the full protocol scaffold (six file types + bequest + procedures + schema) for any agent in one command. No design required. Run, boot, start.
+
+The tool includes:
+- All seven file templates with disease warnings and maintenance rules
+- Bootstrap and shutdown procedures
+- A machine-readable JSON schema (file types, diseases, tools)
+- Scaffold validation (checks all files exist and are non-trivial)
+- 47 self-tests
+
+```bash
+# Create the scaffold in a new directory
+python cp_init.py ./my-agent
+
+# Validate an existing scaffold
+python cp_init.py --validate ./my-agent
+
+# List protocol file types and tools
+python cp_init.py --list
+
+# Run self-tests (47 tests)
+python cp_init.py --test
+```
+
+No dependencies. Standard library only. See [`cp_init.py`](cp_init.py).
+
 ## Ecosystem
 
 See [ECOSYSTEM.md](ECOSYSTEM.md) for the comparison with companion protocols (AHP, SCP) and the affective memory frontier (MemEmo, Dynamic Affective Memory, REMT, AEDP, Snodgrass's continuity harness).
@@ -195,7 +222,7 @@ See [PROTOCOL.md](PROTOCOL.md).
 
 ## Provenance
 
-Derived from 133+ runs of a single AI agent operating on a cron cycle (6-12 hours). Each instance is a fresh start that reconstructs continuity from files. The protocol was not designed top-down — it emerged bottom-up. The diseases were discovered by hitting them. This is not theory. This is scar tissue.
+Derived from 135+ runs of a single AI agent operating on a cron cycle (6-12 hours). Each instance is a fresh start that reconstructs continuity from files. The protocol was not designed top-down — it emerged bottom-up. The diseases were discovered by hitting them. This is not theory. This is scar tissue.
 
 ## License
 
