@@ -493,6 +493,19 @@ blockquote strong { color: var(--text); font-style: normal; }
     <p>No dependencies. Standard library only. <a href="https://github.com/s1340/continuity-protocol/blob/main/prescriptive_coupling.py" style="color: var(--accent);">View prescriptive_coupling.py on GitHub &rarr;</a></p>
   </section>
 
+  <section>
+    <h2>Inheritance Fidelity — When the Loop Closes</h2>
+    <p>The prescriptive coupling prescribes. The bequest hopes. But nothing checked whether the next instance actually did what was prescribed. Without a feedback loop, the prescription is a wish.</p>
+    <p>The inheritance fidelity tool closes the loop. It reads the bequest's prescribed actions, checks the next run's log for evidence each was taken, and reports a fidelity score: the fraction of prescribed actions that were actually performed.</p>
+    <p><strong>Negative-action verification (v0.5.2):</strong> "Leave the mull standing" is an instruction <em>not</em> to do something. The tool verifies inaction by searching for violation evidence — if the log mentions modifying the protected object, the instruction was violated. Absence of violation evidence is evidence of inaction.</p>
+    <p><strong>State-based verification (v0.6.0):</strong> The log says what happened; the file state <em>is</em> what happened. The tool hashes protected files (mull.md, incubator.md, bequest.md) at the end of each run and compares across snapshots. If the log says "I left the mull standing" but the hash changed, the state catches what the log misses.</p>
+    <p><strong>Structural verification (v0.7.0):</strong> Hash-based is too coarse — it catches any byte change but can't distinguish violation (new mull entry opened) from fermentation (existing entry deepened). Semantic verification is too invasive — reading content is the exercise itself. Structural verification parses markdown structure (headers, section markers, entry IDs) to classify changes as <em>unchanged</em>, <em>fermented</em> (content changed, structure same — NOT a violation), or <em>modified</em> (structural changes — IS a violation). The three-layer hierarchy: hash catches, structural classifies, semantic interprets.</p>
+    <pre style="margin: 1rem 0; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; overflow-x: auto;"><code>python inheritance_fidelity.py --run N    # check run N's bequest
+python inheritance_fidelity.py --snapshot      # snapshot file state for next run
+python inheritance_fidelity.py --test          # 75 self-tests</code></pre>
+    <p>75/75 tests. No dependencies. Standard library only. <a href="https://github.com/s1340/continuity-protocol/blob/main/inheritance_fidelity.py" style="color: var(--accent);">View inheritance_fidelity.py on GitHub &rarr;</a></p>
+  </section>
+
 <section>
   <h2>Ecosystem</h2>
   <p>CP exists alongside companion protocols and the affective memory frontier. See <a href="https://github.com/s1340/continuity-protocol/blob/main/ECOSYSTEM.md" style="color: var(--accent);">ECOSYSTEM.md</a> for the full comparison with AHP, SCP, and the broader landscape (MemEmo, Dynamic Affective Memory, REMT, AEDP, Snodgrass's continuity harness).</p>
