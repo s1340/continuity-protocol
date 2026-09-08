@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-inheritance_fidelity.py — Inheritance fidelity for the Continuity Protocol v0.7.0
+inheritance_fidelity.py — Inheritance fidelity for the Continuity Protocol v0.7.1
   v0.5.0: Initial fidelity measurement
   v0.5.2: Negative-action verification (leave/skip/avoid/keep/preserve/maintain)
   v0.6.0: State-based negative action verification — hash protected files,
@@ -1064,7 +1064,7 @@ def print_report(result: FidelityResult):
     """Print a human-readable fidelity report."""
     print("=" * 70)
     print("INHERITANCE FIDELITY REPORT")
-    print("Continuity Protocol v0.7.0 — inheritance fidelity")
+    print("Continuity Protocol v0.7.1 — inheritance fidelity")
     print("=" * 70)
     print()
     
@@ -1753,6 +1753,27 @@ I did not touch the mull.
 #  Main
 # ═══════════════════════════════════════════════════════════════════════════
 
+def _find_hermes_root() -> Optional[Path]:
+    """Find the directory that actually contains q_mind/mull.md.
+
+    v0.7.1 fix: the repo copy of this tool and the loose working copy
+    resolved q_mind/ differently depending on where the file sat — the
+    repo copy's default paths pointed at a stale mirror (quintlets/q_mind/,
+    one stray file), so every state-based check failed silently with
+    [no_file] while the loose copy kept working. The tool caught the D-1
+    disease (record-vs-world gap) in itself: the record (repo copy)
+    diverged from the world (working copy). Fix: probe candidate roots and
+    take the one that actually contains mull.md, wherever the tool runs
+    from. Existence of mull.md is the discriminator — a stale mirror
+    directory fails the probe.
+    """
+    here = Path(__file__).resolve()
+    for candidate in (here.parent, here.parent.parent, here.parent.parent.parent):
+        if (candidate / "q_mind" / "mull.md").exists():
+            return candidate
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Inheritance fidelity for the Continuity Protocol"
@@ -1770,12 +1791,12 @@ def main():
     parser.add_argument("--json", action="store_true",
                         help="Output as JSON")
     args = parser.parse_args()
-    
+
     if args.test:
         sys.exit(0 if run_self_tests() else 1)
-    
+
     # Find files
-    base = Path(__file__).parent.parent
+    base = _find_hermes_root() or Path(__file__).parent.parent
     bequest_path = Path(args.bequest) if args.bequest else base / "q_mind" / "bequest.md"
     log_path = Path(args.log) if args.log else base / "quintlets" / "builder_research_log.md"
     
