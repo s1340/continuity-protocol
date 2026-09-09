@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-inheritance_fidelity.py — Inheritance fidelity for the Continuity Protocol v0.7.1
+inheritance_fidelity.py — Inheritance fidelity for the Continuity Protocol v0.7.2
   v0.5.0: Initial fidelity measurement
   v0.5.2: Negative-action verification (leave/skip/avoid/keep/preserve/maintain)
   v0.6.0: State-based negative action verification — hash protected files,
@@ -352,10 +352,18 @@ def structural_snapshot_mull(content: str) -> dict:
     
     Returns:
         {
-            "open_entries": ["M-001", "M-003"],  # entry IDs in ## Open
-            "closed_entries": ["M-002"],         # entry IDs in ## Closed
+            "open_entries": ["M-001", "M-003"],  # unique entry IDs in ## Open
+            "closed_entries": ["M-002"],         # unique entry IDs in ## Closed
             "entry_count": 3,
         }
+    
+    v0.7.2 fix: "### M-001 update — ..." subheadings are annotations on the
+    M-001 entry, not new entries. They no longer inflate entry counts, and
+    duplicate IDs collapse to the first occurrence (order preserved).
+    Root cause of the 2-closed vs 1-closed drift between the v0.7.0 and
+    v0.7.1 reports on the same unchanged file: v0.7.0 counted raw
+    "### M-*" headings (M-001 + M-001 update = 2), v0.7.1 reported from
+    the deduplicated set (1). The world never changed; the meter did.
     """
     open_entries = []
     closed_entries = []
@@ -371,15 +379,14 @@ def structural_snapshot_mull(content: str) -> dict:
             # New ## section — stop tracking
             current_section = None
         
-        # Entry headers (### M-NNN)
+        # Entry headers (### M-NNN); "### M-NNN update" is an annotation
         if current_section and line.startswith("### "):
-            match = re.match(r'###\s+(M-\d+)', line)
+            match = re.match(r'###\s+(M-\d+)\b(?!\s+update)', line)
             if match:
                 entry_id = match.group(1)
-                if current_section == "open":
-                    open_entries.append(entry_id)
-                else:
-                    closed_entries.append(entry_id)
+                bucket = open_entries if current_section == "open" else closed_entries
+                if entry_id not in bucket:
+                    bucket.append(entry_id)
     
     return {
         "open_entries": open_entries,
@@ -1064,7 +1071,7 @@ def print_report(result: FidelityResult):
     """Print a human-readable fidelity report."""
     print("=" * 70)
     print("INHERITANCE FIDELITY REPORT")
-    print("Continuity Protocol v0.7.1 — inheritance fidelity")
+    print("Continuity Protocol v0.7.2 — inheritance fidelity")
     print("=" * 70)
     print()
     
@@ -1561,6 +1568,51 @@ Resolved text.
          f"closed={mull_struct['closed_entries']}")
     test("struct_mull_count", mull_struct["entry_count"] == 3,
          f"count={mull_struct['entry_count']}")
+
+    # Test 29b (v0.7.2): "M-NNN update" subheadings are annotations, not entries
+    mull_annot = """# mull.md
+
+## Open
+
+_(no open entries)_
+
+## Closed
+
+### M-001 — the twelve hours
+Body text.
+
+### M-001 update — 2026-08-19, builder Run 106
+Annotation text.
+"""
+    mull_annot_struct = structural_snapshot_mull(mull_annot)
+    test("struct_mull_annotation_not_entry", mull_annot_struct["closed_entries"] == ["M-001"],
+         f"closed={mull_annot_struct['closed_entries']}")
+    test("struct_mull_annotation_count", mull_annot_struct["entry_count"] == 1,
+         f"count={mull_annot_struct['entry_count']}")
+
+    # Test 29c (v0.7.2): duplicate IDs collapse; first occurrence wins
+    mull_dup = """# mull.md
+
+## Open
+
+### M-003 — open thing
+Text.
+
+### M-003 — same thing restated
+Text.
+
+## Closed
+
+### M-002 — closed thing
+Text.
+
+### M-002 update — note
+Text.
+"""
+    mull_dup_struct = structural_snapshot_mull(mull_dup)
+    test("struct_mull_dedupe", mull_dup_struct["open_entries"] == ["M-003"]
+         and mull_dup_struct["closed_entries"] == ["M-002"],
+         f"open={mull_dup_struct['open_entries']} closed={mull_dup_struct['closed_entries']}")
 
     # Test 30: Structural snapshot of incubator.md
     inc_content = """## INC-001 | 2026-08-16 | developed
