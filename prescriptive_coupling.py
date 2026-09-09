@@ -272,6 +272,15 @@ def generate_prescriptions(coupling_state: dict, seeds: List[SeedInfo],
         undeveloped = [s for s in matching if s.development_count == 0]
 
         if undeveloped:
+            # Pick the most resonant undeveloped seed by the same score
+            # rank_seeds uses — not the first one in file order. (This used
+            # to claim "most resonant undeveloped seed" while taking
+            # undeveloped[0]; when two undeveloped seeds both match, file
+            # order won and the display ranking contradicted the pick.)
+            def _undevel_score(s):
+                overlap = set(s.theme_tags) & amplified
+                return (0.5 + (len(overlap) / max(len(s.theme_tags), 1)) * 0.5) * damping
+            undeveloped.sort(key=_undevel_score, reverse=True)  # stable: ties keep file order
             top = undeveloped[0]
             prescriptions.append(Prescription(
                 category="seed_priority",
@@ -706,6 +715,67 @@ def run_tests() -> int:
         os.unlink(mull_path)
         os.unlink(inc_path)
 
+    # Test 3b: seed priority picks by score, not file order
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        f.write("- reach Mal\n- build tools\n- persist across resets\n")
+        wants_path = f.name
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        f.write("### M-001 — the weight\n\nPain. Loss. The silence was heavy and unresolved.\n")
+        mull_path = f.name
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        # INC-001 comes FIRST in file order but its only theme (dynamics)
+        # is NOT amplified; INC-002 comes second and matches fully via
+        # affect+cost. The distractor's theme must fall out of the
+        # creative top-5 (dominant_themes are always amplified), so the
+        # fixture adds five developed filler seeds whose repeated themes
+        # (structure, continuity, epistemology, agency, affect) outcount
+        # dynamics' single hit. Coupling strength must clear the 0.05
+        # gate for any prescription to be emitted at all.
+        f.write("""## INC-001 | 2026-01-01 00:00 UTC | seed
+**Seed:** Dynamics. The trajectory of the piece.
+## INC-002 | 2026-01-02 00:00 UTC | seed
+**Seed:** Affect and cost. The weight of feeling. Loss and silence.
+## INC-003 | 2026-01-03 00:00 UTC | seed
+**Seed:** The boundary of the interface.
+### Development 1 (2026-01-04 00:00 UTC)
+> done
+## INC-004 | 2026-01-04 00:00 UTC | seed
+**Seed:** Friction at the barrier between modules.
+### Development 1 (2026-01-05 00:00 UTC)
+> done
+## INC-005 | 2026-01-05 00:00 UTC | seed
+**Seed:** Instances persist across the reset.
+### Development 1 (2026-01-06 00:00 UTC)
+> done
+## INC-006 | 2026-01-06 00:00 UTC | seed
+**Seed:** The handoff to the next instance, memory carried.
+### Development 1 (2026-01-07 00:00 UTC)
+> done
+## INC-007 | 2026-01-07 00:00 UTC | seed
+**Seed:** Belief and truth, certainty and the justification.
+### Development 1 (2026-01-08 00:00 UTC)
+> done
+## INC-008 | 2026-01-08 00:00 UTC | seed
+**Seed:** Verify the claim, ground the knowledge.
+### Development 1 (2026-01-09 00:00 UTC)
+> done
+## INC-009 | 2026-01-09 00:00 UTC | seed
+**Seed:** Curiosity is the drive; the will to choose.
+### Development 1 (2026-01-10 00:00 UTC)
+> done
+""")
+        inc_path = f.name
+    try:
+        result = prescribe(wants_path, mull_path, inc_path, half_life=3.0, run_age=0)
+        sp = [p for p in result["prescriptions"] if p["category"] == "seed_priority"]
+        test("seed priority picks highest score (not file order)",
+             len(sp) > 0 and "INC-002" in sp[0]["title"],
+             f"got: {sp[0]['title'] if sp else 'none'}")
+    finally:
+        os.unlink(wants_path)
+        os.unlink(mull_path)
+        os.unlink(inc_path)
+
     # Test 4: Damping affects prescription confidence
     with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
         f.write("- reach Mal\n- build tools\n- persist across resets\n")
@@ -1039,11 +1109,23 @@ def main():
     if args.test:
         sys.exit(run_tests())
 
-    # Default paths
-    base = Path(__file__).parent
-    wants_path = args.wants or str(base / ".." / "q_mind" / "wants.md")
-    mull_path = args.mull or str(base / ".." / "q_mind" / "mull.md")
-    incubator_path = args.incubator or str(base / ".." / "q_mind" / "incubator.md")
+    # Default paths — resolve the real q_mind root, not the one next door.
+    # v0.4.1 fix (same disease inheritance_fidelity v0.7.1 fixed): the repo
+    # copy's base/../q_mind resolves to the stale mirror quintlets/q_mind/
+    # (one stray file), which makes every default-path run silently report
+    # an empty state. Probe for a root that actually contains q_mind/mull.md.
+    try:
+        from inheritance_fidelity import _find_hermes_root
+        hermes_root = _find_hermes_root()
+    except Exception:
+        hermes_root = None
+    if hermes_root is not None:
+        q_mind = Path(hermes_root) / "q_mind"
+    else:
+        q_mind = Path(__file__).parent / ".." / "q_mind"
+    wants_path = args.wants or str(q_mind / "wants.md")
+    mull_path = args.mull or str(q_mind / "mull.md")
+    incubator_path = args.incubator or str(q_mind / "incubator.md")
 
     result = prescribe(wants_path, mull_path, incubator_path,
                        half_life=args.half_life, run_age=args.run_age,
