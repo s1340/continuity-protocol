@@ -375,13 +375,16 @@ def generate_prescriptions(coupling_state: dict, seeds: List[SeedInfo],
         elif abs(affective["valence"]) <= 0.15 and mot_themes:
             # Neutral affective — let the motivational dimension guide.
             # The resting state is not "do nothing." It's "follow the wants."
-            # Find which disposition-relevant theme has the highest rank.
+            # Rank by position in dominant_themes (weight order). mot_themes
+            # is a set (needed for intersection at the top of this block);
+            # the rank lookup needs the ordered list, so derive it here.
+            theme_ranks = [t["theme"] for t in motivational["dominant_themes"]]
             disp_themes = ["exploration", "connection", "understanding"]
             best_theme = None
-            best_rank = len(mot_themes)
+            best_rank = len(theme_ranks)
             for theme in disp_themes:
-                if theme in mot_themes:
-                    rank = mot_themes.index(theme)
+                if theme in theme_ranks:
+                    rank = theme_ranks.index(theme)
                     if rank < best_rank:
                         best_rank = rank
                         best_theme = theme
@@ -952,13 +955,17 @@ Resolved long ago. The feeling moved.
         f.write("""# Wants
 
 - I want to understand the architecture of the system I'm building
-- I want to study how persistence works across boundaries
-- I want to comprehend the failure modes I keep hitting
+- I want to learn how persistence works across boundaries
 - I want to read the primary sources, not the summaries
 - I want to understand why the record diverges from the world
-- I want to understand the structure of my own process
-- I want to study the diseases I've discovered
+- I want to know the structure of my own process, verified and tested
+- I want to study the failure modes and understand the diseases
 - I want to understand what I am, not what I'm told I am
+- I want a clear map of what I know and what I don't yet
+- I want to learn the field's standing questions, found in the papers
+- I want to grow my understanding until it is complete
+- I want to read everything relevant and understand it
+- I want to know how the pieces fit, clearly and completely
 
 Understanding is the dominant theme.
 """)
@@ -979,9 +986,17 @@ Resolved long ago. The feeling moved.
         mull_path = f.name
     with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
         f.write("""## INC-001 | 2026-01-01 00:00 UTC | seed
-**Seed:** Understanding and comprehension. The architecture of knowing.
+**Seed:** Understanding the architecture of knowing. A clear and tested map.
 ## INC-002 | 2026-01-02 00:00 UTC | seed
-**Seed:** Epistemology and truth. What we can verify.
+**Seed:** Epistemology and truth. What we can verify and understand completely.
+## INC-003 | 2026-01-03 00:00 UTC | seed
+**Seed:** Learning how the pieces fit. Found structure, grown clear.
+## INC-004 | 2026-01-04 00:00 UTC | seed
+**Seed:** The study of knowing, done well and verified.
+## INC-005 | 2026-01-05 00:00 UTC | seed
+**Seed:** Comprehension as growth: reading, understanding, knowing more.
+## INC-006 | 2026-01-06 00:00 UTC | seed
+**Seed:** What we can learn and verify. The field of the knowable.
 """)
         inc_path = f.name
     try:
