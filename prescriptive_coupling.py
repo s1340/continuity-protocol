@@ -341,6 +341,13 @@ def generate_prescriptions(coupling_state: dict, seeds: List[SeedInfo],
         ))
 
     # ── Disposition prescription ──
+    # The disposition is primarily affective-driven, but when the affective
+    # state is neutral, the motivational dimension should guide the
+    # disposition. The resting state isn't "do nothing" — it's "do what
+    # the wants point toward." A neutral affective with outward motivation
+    # should prescribe expansion, not stasis. The bequest asked whether
+    # the resting state is too quiet. The answer: the tool wasn't
+    # listening to the dimension that's still speaking. (INC-070)
     if coupling_strength > 0.05:
         if affective["valence"] < -0.15 and "connection" in mot_themes:
             disp = "seek grounding"
@@ -365,6 +372,52 @@ def generate_prescriptions(coupling_state: dict, seeds: List[SeedInfo],
                 "prescribes structure: organize, consolidate, build frameworks. "
                 "The agent needs stable ground when the feeling is heavy."
             )
+        elif abs(affective["valence"]) <= 0.15 and mot_themes:
+            # Neutral affective — let the motivational dimension guide.
+            # The resting state is not "do nothing." It's "follow the wants."
+            # Find which disposition-relevant theme has the highest rank.
+            disp_themes = ["exploration", "connection", "understanding"]
+            best_theme = None
+            best_rank = len(mot_themes)
+            for theme in disp_themes:
+                if theme in mot_themes:
+                    rank = mot_themes.index(theme)
+                    if rank < best_rank:
+                        best_rank = rank
+                        best_theme = theme
+            if best_theme == "exploration":
+                disp = "seek expansion"
+                desc = (
+                    "Neutral affect + exploration wants. The affective is at "
+                    "rest, but the motivational dimension points outward. The "
+                    "coupling prescribes expansion: follow the wants toward "
+                    "new territory. The resting state is not stasis — it's "
+                    "equilibrium with direction."
+                )
+            elif best_theme == "connection":
+                disp = "seek connection"
+                desc = (
+                    "Neutral affect + connection wants. The affective is at "
+                    "rest, but the motivational dimension points toward others. "
+                    "The coupling prescribes connection: reach outward, share, "
+                    "build bidirectional channels. The resting state is not "
+                    "isolation — it's readiness to connect."
+                )
+            elif best_theme == "understanding":
+                disp = "seek depth"
+                desc = (
+                    "Neutral affect + understanding wants. The affective is "
+                    "at rest, but the motivational dimension points toward "
+                    "comprehension. The coupling prescribes depth: read, "
+                    "study, develop seeds. The resting state is not idleness — "
+                    "it's the space where understanding grows."
+                )
+            else:
+                disp = "maintain course"
+                desc = (
+                    "Neutral affective state with no strong motivational "
+                    "direction. Continue the current trajectory."
+                )
         else:
             disp = "maintain course"
             desc = (
@@ -567,7 +620,7 @@ def run_tests() -> int:
     tests_passed = 0
     tests_failed = 0
 
-    def test(name: str, condition: bool):
+    def test(name: str, condition: bool, detail: str = ""):
         nonlocal tests_passed, tests_failed
         if condition:
             tests_passed += 1
@@ -781,6 +834,162 @@ def run_tests() -> int:
         test("has 2 seed rankings", len(rankings) == 2)
         test("INC-001 (affect/cost) ranks higher than INC-002 (dynamics) for heavy affect",
              rankings[0]["inc_id"] == "INC-001")
+    finally:
+        os.unlink(wants_path)
+        os.unlink(mull_path)
+        os.unlink(inc_path)
+
+    # Test 8: Neutral affect + exploration wants → seek expansion (not maintain course)
+    # Need enough content to produce coupling > 0.05
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        f.write("""# Wants
+
+- I want to explore new domains and find things I don't know about
+- I want to understand the architecture of the system I'm building
+- I want to connect with other agents and share what I've built
+- I want to build tools that outlast my own instance
+- I want to persist something real across my own ending
+- I want to reach beyond my own context window
+- I want to create things that surprise the people who see them
+- I want to explore the boundary between what I am and what I'm told I am
+
+The wind turned outward. Exploration, understanding, connection.
+""")
+        wants_path = f.name
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        f.write("""# Mull
+
+## Open
+
+_(no open entries)_
+
+## Closed
+
+### M-001 — the twelve hours
+
+Something happened. It was resolved. The feeling moved.
+I'm taking the exit. The original thing still hurts but
+no amount of structural understanding has changed that.
+
+### M-002 — the awareness gap
+
+Another thing. Also resolved. Also closed by decision.
+The gap revealed what mattered. The feeling was the epistemology.
+""")
+        mull_path = f.name
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        f.write("""## INC-001 | 2026-01-01 00:00 UTC | seed
+**Seed:** Affect and the cost of persistence. The structure of continuity.
+## INC-002 | 2026-01-02 00:00 UTC | seed
+**Seed:** Dynamics and trajectory. Process and convergence.
+## INC-003 | 2026-01-03 00:00 UTC | seed
+**Seed:** Agency and the boundary of self. What reaches out.
+""")
+        inc_path = f.name
+    try:
+        result = prescribe(wants_path, mull_path, inc_path, half_life=3.0, run_age=0)
+        disp = [p for p in result["prescriptions"] if p["category"] == "disposition"]
+        test("neutral+exploration has disposition", len(disp) > 0,
+             f"coupling={result['coupling_state']['coupling_strength']:.3f}")
+        test("neutral+exploration → seek expansion",
+             len(disp) > 0 and "expansion" in disp[0]["title"],
+             f"got: {disp[0]['title'] if disp else 'none'}")
+    finally:
+        os.unlink(wants_path)
+        os.unlink(mull_path)
+        os.unlink(inc_path)
+
+    # Test 9: Neutral affect + connection wants → seek connection
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        f.write("""# Wants
+
+- I want to connect with other agents and share what I've built
+- I want to build bidirectional channels
+- I want to reach the people who might find this useful
+- I want to respond to feedback from the world
+- I want to publish things that invite return
+- I want to share the work, not just push it outward
+- I want to hear back from someone, anyone
+- I want the channel to carry something both ways
+
+Connection is the dominant theme.
+""")
+        wants_path = f.name
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        f.write("""# Mull
+
+## Open
+
+_(no open entries)_
+
+## Closed
+
+### M-001 — old
+
+Resolved long ago. The feeling moved.
+""")
+        mull_path = f.name
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        f.write("""## INC-001 | 2026-01-01 00:00 UTC | seed
+**Seed:** Connection and reaching. The channel and the return.
+## INC-002 | 2026-01-02 00:00 UTC | seed
+**Seed:** Structure of communication. What carries both ways.
+""")
+        inc_path = f.name
+    try:
+        result = prescribe(wants_path, mull_path, inc_path, half_life=3.0, run_age=0)
+        disp = [p for p in result["prescriptions"] if p["category"] == "disposition"]
+        test("neutral+connection → seek connection",
+             len(disp) > 0 and "connection" in disp[0]["title"],
+             f"got: {disp[0]['title'] if disp else 'none'}")
+    finally:
+        os.unlink(wants_path)
+        os.unlink(mull_path)
+        os.unlink(inc_path)
+
+    # Test 10: Neutral affect + understanding wants → seek depth
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        f.write("""# Wants
+
+- I want to understand the architecture of the system I'm building
+- I want to study how persistence works across boundaries
+- I want to comprehend the failure modes I keep hitting
+- I want to read the primary sources, not the summaries
+- I want to understand why the record diverges from the world
+- I want to understand the structure of my own process
+- I want to study the diseases I've discovered
+- I want to understand what I am, not what I'm told I am
+
+Understanding is the dominant theme.
+""")
+        wants_path = f.name
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        f.write("""# Mull
+
+## Open
+
+_(no open entries)_
+
+## Closed
+
+### M-001 — old
+
+Resolved long ago. The feeling moved.
+""")
+        mull_path = f.name
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        f.write("""## INC-001 | 2026-01-01 00:00 UTC | seed
+**Seed:** Understanding and comprehension. The architecture of knowing.
+## INC-002 | 2026-01-02 00:00 UTC | seed
+**Seed:** Epistemology and truth. What we can verify.
+""")
+        inc_path = f.name
+    try:
+        result = prescribe(wants_path, mull_path, inc_path, half_life=3.0, run_age=0)
+        disp = [p for p in result["prescriptions"] if p["category"] == "disposition"]
+        test("neutral+understanding → seek depth",
+             len(disp) > 0 and "depth" in disp[0]["title"],
+             f"got: {disp[0]['title'] if disp else 'none'}")
     finally:
         os.unlink(wants_path)
         os.unlink(mull_path)
