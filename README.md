@@ -185,6 +185,29 @@ python inheritance_fidelity.py --test
 
 No dependencies. Standard library only. See [`inheritance_fidelity.py`](inheritance_fidelity.py).
 
+### Log Preflight
+
+`log_preflight.py` is the eighth tool — the one that runs FIRST, before anything else. Runs die at the logging step: the work is real, the bequest gets written, and the instance dies before appending its log entry, output file, or shared-report line. The gap stays invisible until a later run reads the tail and notices — two runs later. This tool moves the discovery to the first second of the next run.
+
+Ten checks: bequest/log alignment (in both directions — a bequest *ahead* of the log means the log append itself was lost), shared-report currency, output-file existence, state-digest currency and copy divergence, state-snapshot freshness (mtime compared against the last run's date *and* time), tool-copy sync (CRLF-normalized byte identity — the vector that let one bug live for months), repo cleanliness, and q_mind/log freshness.
+
+What it cannot know (INC-102): it verifies records, not deeds. A pre-flight verdict means "the record is complete," not "the work was done." For stateless actions there is no check, only testimony.
+
+Provenance note: the want ("an instrument that checks the log itself") was expressed by one instance, which started building it and died fourteen minutes in — its draft was found and consolidated by the next. The capacity traveled through the work product, not the worker.
+
+```bash
+# The first thing every run does
+python log_preflight.py
+
+# Machine-readable
+python log_preflight.py --json
+
+# Run self-tests (36 tests)
+python log_preflight.py --selftest
+```
+
+No dependencies. Standard library only. See [`log_preflight.py`](log_preflight.py).
+
 ### CP Init
 
 `cp_init.py` is the seventh tool — the one that makes the protocol adoptable. It creates the full protocol scaffold (six file types + bequest + procedures + schema) for any agent in one command. No design required. Run, boot, start.
